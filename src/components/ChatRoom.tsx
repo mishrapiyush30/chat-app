@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
@@ -37,7 +36,11 @@ const ChatRoom = () => {
     }
 
     fetchMessages();
-    setupRealtimeSubscription();
+    const cleanupSubscription = setupRealtimeSubscription();
+    
+    return () => {
+      cleanupSubscription();
+    };
   }, [user, navigate]);
 
   useEffect(() => {
@@ -46,27 +49,44 @@ const ChatRoom = () => {
 
   const fetchMessages = async () => {
     try {
+      console.log("Fetching messages...");
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          id,
-          user_id,
-          content,
-          inserted_at,
-          profiles:user_id (email)
-        `)
-        .order('inserted_at', { ascending: true })
-        .limit(100);
+        .select('*')
+        .order('inserted_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching messages:", error);
+        throw error;
+      }
 
+      console.log("Messages fetched:", data);
+      
+      // Get all unique user IDs from messages
+      const userIds = [...new Set(data?.map(msg => msg.user_id) || [])];
+      const userEmailMap: Record<string, string> = {};
+      
+      // For each user ID, get their email from auth.users if possible
+      // In a real app, you'd have a profiles table with this info
+      for (const userId of userIds) {
+        if (userId === user.id) {
+          userEmailMap[userId] = user.email || 'You';
+          continue;
+        }
+        
+        // Try to get user info from a profiles table if you have one
+        // For now, just use the user ID as a fallback
+        userEmailMap[userId] = `User ${userId.substring(0, 6)}`;
+      }
+      
       const messagesWithEmail = data?.map(msg => ({
         ...msg,
-        user_email: msg.profiles?.email || 'Unknown User'
+        user_email: userEmailMap[msg.user_id] || 'Unknown User'
       })) || [];
 
       setMessages(messagesWithEmail);
     } catch (error: any) {
+      console.error("Error in fetchMessages:", error);
       toast({
         title: "Error",
         description: "Failed to load messages",
@@ -78,8 +98,9 @@ const ChatRoom = () => {
   };
 
   const setupRealtimeSubscription = () => {
+    console.log("Setting up realtime subscription...");
     const channel = supabase
-      .channel('messages')
+      .channel('public:messages')
       .on(
         'postgres_changes',
         {
@@ -87,15 +108,18 @@ const ChatRoom = () => {
           schema: 'public',
           table: 'messages'
         },
-        async (payload) => {
+        (payload) => {
+          console.log("New message received:", payload);
           const newMessage = payload.new as Message;
           
-          // Get user email for the new message
-          const { data: userData } = await supabase.auth.admin.getUserById(newMessage.user_id);
+          // Add user email for display
+          const userEmail = newMessage.user_id === user?.id 
+            ? user.email 
+            : `User ${newMessage.user_id.substring(0, 6)}`;
           
           setMessages(prev => [...prev, {
             ...newMessage,
-            user_email: userData.user?.email || 'Unknown User'
+            user_email: userEmail || 'Unknown User'
           }]);
         }
       )
@@ -107,12 +131,16 @@ const ChatRoom = () => {
           table: 'messages'
         },
         (payload) => {
+          console.log("Message deleted:", payload);
           setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     return () => {
+      console.log("Removing channel...");
       supabase.removeChannel(channel);
     };
   };
@@ -123,18 +151,26 @@ const ChatRoom = () => {
 
     setSending(true);
     try {
-      const { error } = await supabase
+      console.log("Sending message:", newMessage.trim());
+      const { data, error } = await supabase
         .from('messages')
         .insert([
           {
             content: newMessage.trim(),
             user_id: user.id,
           },
-        ]);
+        ])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error sending message:", error);
+        throw error;
+      }
+      
+      console.log("Message sent:", data);
       setNewMessage('');
     } catch (error: any) {
+      console.error("Error in sendMessage:", error);
       toast({
         title: "Error",
         description: "Failed to send message",
@@ -147,13 +183,20 @@ const ChatRoom = () => {
 
   const deleteMessage = async (messageId: number) => {
     try {
+      console.log("Deleting message:", messageId);
       const { error } = await supabase
         .from('messages')
         .delete()
         .eq('id', messageId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting message:", error);
+        throw error;
+      }
+      
+      console.log("Message deleted successfully");
     } catch (error: any) {
+      console.error("Error in deleteMessage:", error);
       toast({
         title: "Error",
         description: "Failed to delete message",
@@ -255,15 +298,16 @@ const ChatRoom = () => {
       <div className="bg-white border-t border-gray-200 p-4">
         <form onSubmit={sendMessage} className="flex gap-2">
           <Input
+            type="text"
+            placeholder="Type your message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            maxLength={500}
-            disabled={sending}
             className="flex-1"
+            disabled={sending}
           />
           <Button type="submit" disabled={!newMessage.trim() || sending}>
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4 mr-2" />
+            Send
           </Button>
         </form>
       </div>
