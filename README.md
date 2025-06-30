@@ -2,6 +2,10 @@
 
 A production-grade real-time chat application built with React, TypeScript, Tailwind CSS, and Supabase.
 
+## Live Demo
+
+This application is deployed on Render.com: [https://chat-app-xlqu.onrender.com](https://chat-app-xlqu.onrender.com)
+
 ## Features
 
 - 🔐 Email/password authentication with Supabase Auth
@@ -10,6 +14,25 @@ A production-grade real-time chat application built with React, TypeScript, Tail
 - 📱 Responsive design with modern UI
 - 🔒 Row-Level Security (RLS) for data protection
 - ⚡ Built with Vite for fast development
+- 🚀 CI/CD pipeline with GitHub Actions
+- 🐳 Dockerized for consistent deployment
+- 🔄 Health monitoring endpoint at /health
+
+## Deployment
+
+This application is containerized and deployed using the following:
+
+1. **Docker image**: [mishrapiyush30/chat-app](https://hub.docker.com/r/mishrapiyush30/chat-app)
+2. **CI/CD**: GitHub Actions automatically builds and pushes the Docker image on each push to main
+3. **Hosting**: Deployed on Render.com as a web service
+4. **Monitoring**: Health endpoint at `/health` monitored via UptimeRobot
+
+### Deployment Challenges & Learnings
+
+- Configuring environment variables in Dockerized applications requires careful handling
+- For React apps served through Nginx, proper configuration for SPA routing is crucial
+- Adding a health check endpoint simplifies monitoring and improves operational awareness
+- Using Docker Hub as an intermediate registry makes deployment more reliable
 
 ## Tech Stack
 
@@ -19,7 +42,9 @@ A production-grade real-time chat application built with React, TypeScript, Tail
 - **Backend & Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **Real-time Communication**: Supabase Realtime
-- **Deployment**: Ready for Vercel/Netlify
+- **Containerization**: Docker
+- **CI/CD**: GitHub Actions
+- **Hosting**: Render.com
 
 ## Prerequisites
 
