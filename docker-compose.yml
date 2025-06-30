@@ -1,0 +1,23 @@
+services:
+  chat-app:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    # For development, you might want to use the development server instead of nginx
+    # In that case, use this alternative configuration:
+    # build:
+    #   context: .
+    #   target: builder
+    # command: npm run dev
+    # ports:
+    #   - "8080:8080" 

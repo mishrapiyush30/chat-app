@@ -1,0 +1,29 @@
+name: Deploy to Render
+
+on:
+  workflow_run:
+    workflows: ["Docker CI/CD Pipeline"]
+    branches: [main]
+    types:
+      - completed
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+# To use this workflow:
+# 1. Create a Render.com account and set up your web service
+# 2. Get your service ID from the Render dashboard
+# 3. Create an API key at https://render.com/docs/api-keys
+# 4. Set RENDER_SERVICE_ID and RENDER_API_KEY as secrets in your GitHub repository
+#    (Go to Settings -> Secrets and variables -> Actions -> New repository secret) 
