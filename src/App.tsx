@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from "@/components/ui/toaster";
@@ -11,6 +10,17 @@ import ChatRoom from './components/ChatRoom';
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Add a route handler for health check
+  if (window.location.pathname === '/health') {
+    return (
+      <div style={{ padding: '20px', fontFamily: 'monospace' }}>
+        STATUS: OK
+        <br />
+        TIMESTAMP: {new Date().toISOString()}
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
