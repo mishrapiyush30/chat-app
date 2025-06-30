@@ -24,7 +24,7 @@ This application is containerized and deployed using the following:
 
 1. **Docker image**: [mishrapiyush30/chat-app](https://hub.docker.com/r/mishrapiyush30/chat-app)
 2. **CI/CD**: GitHub Actions automatically builds and pushes the Docker image on each push to main
-3. **Hosting**: Deployed on Render.com as a web service
+3. **Hosting**: Deployed on Render.com as a web service at [https://chat-app-xlqu.onrender.com](https://chat-app-xlqu.onrender.com)
 4. **Monitoring**: Health endpoint at `/health` monitored via UptimeRobot
 
 ### Deployment Challenges & Learnings
@@ -183,23 +183,6 @@ chat-app/
 ├── nginx.conf          # Nginx configuration for production
 └── package.json        # Project dependencies
 ```
-
-## Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Connect your GitHub repo to Vercel
-3. Add your environment variables in Vercel dashboard
-4. Deploy!
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-### Deploy to Netlify
-
-1. Build the project: `npm run build`
-2. Deploy the `dist` folder to Netlify
-3. Add environment variables in Netlify dashboard
 
 ## Security Features
 
