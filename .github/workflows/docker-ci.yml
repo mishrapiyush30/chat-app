@@ -32,33 +32,32 @@ jobs:
       #   run: |
       #     docker run --rm chat-app:test npm test
   
-  # Uncomment the following job if you want to push to Docker Hub
-  # publish:
-  #   needs: build
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-latest
-  #   
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-  #       
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     
-  #     - name: Login to Docker Hub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
-  #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-  #     
-  #     - name: Build and push
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: .
-  #         push: true
-  #         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/chat-app:latest
-  #         cache-from: type=gha
-  #         cache-to: type=gha,mode=max
+  publish:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: mishrapiyush30
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: mishrapiyush30/chat-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   
   # Uncomment the following job if you want to deploy to a hosting service
   # deploy:
